@@ -963,7 +963,7 @@ class BetterPlayerController extends ChangeNotifier {
 
   ///Enable or disable audio mixing with other sound within device.
   void setMixWithOthers(bool mixWithOthers) {
-    videoPlayerController.setMixWithOthers(mixWithOthers);
+    videoPlayerController?.setMixWithOthers(mixWithOthers);
   }
 
   ///Build headers map that will be used to setup video player controller. Apply

@@ -41,6 +41,7 @@ class VideoPlayerValue {
     this.speed = 1.0,
     this.errorDescription,
     this.isPip = false,
+    this.isMixWithOthers = false,
   });
 
   /// Returns an instance with a `null` [Duration].
@@ -95,6 +96,8 @@ class VideoPlayerValue {
   ///Is in Picture in Picture Mode
   final bool isPip;
 
+  final bool isMixWithOthers;
+
   /// Indicates whether or not the video has been loaded and is ready to play.
   bool get initialized => duration != null;
 
@@ -130,6 +133,7 @@ class VideoPlayerValue {
     String errorDescription,
     double speed,
     bool isPip,
+    bool isMixWithOthers,
   }) {
     return VideoPlayerValue(
       duration: duration ?? this.duration,
@@ -144,6 +148,7 @@ class VideoPlayerValue {
       speed: speed ?? this.speed,
       errorDescription: errorDescription ?? this.errorDescription,
       isPip: isPip ?? this.isPip,
+      isMixWithOthers: isMixWithOthers ?? this.isMixWithOthers,
     );
   }
 
@@ -160,7 +165,8 @@ class VideoPlayerValue {
         'isLooping: $isLooping, '
         'isBuffering: $isBuffering, '
         'volume: $volume, '
-        'errorDescription: $errorDescription)';
+        'errorDescription: $errorDescription), '
+        'isMixWithOthers: $isMixWithOthers';
   }
 }
 
@@ -204,6 +210,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
     unawaited(_applyLooping());
     unawaited(_applyVolume());
+    unawaited(_applyMixWithOthers());
 
     void eventListener(VideoEvent event) {
       if (_isDisposed) {
@@ -384,6 +391,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       duration: null,
       isLooping: value.isLooping,
       volume: value.volume,
+      isMixWithOthers: value.isMixWithOthers,
     );
 
     if (!_creatingCompleter.isCompleted) await _creatingCompleter.future;
@@ -577,8 +585,17 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     _videoPlayerPlatform.setAudioTrack(_textureId, name, index);
   }
 
-  void setMixWithOthers(bool mixWithOthers) {
-    _videoPlayerPlatform.setMixWithOthers(_textureId, mixWithOthers);
+  Future<void> setMixWithOthers(bool mixWithOthers) async {
+    value = value.copyWith(isMixWithOthers: mixWithOthers);
+    await _applyMixWithOthers();
+  }
+
+  Future<void> _applyMixWithOthers() async {
+    if (!_created || _isDisposed) {
+      return;
+    }
+    await _videoPlayerPlatform.setMixWithOthers(
+        _textureId, value.isMixWithOthers);
   }
 }
 
